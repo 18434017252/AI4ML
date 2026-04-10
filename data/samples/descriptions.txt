@@ -1,0 +1,7 @@
+Task name: Iris classification
+Task description: Predict the iris label from four numeric features.
+Problem type: classification
+Label column: label
+Metric: accuracy
+Use iris.csv as the dataset.
+Prefer lightweight libraries: scikit-learn.

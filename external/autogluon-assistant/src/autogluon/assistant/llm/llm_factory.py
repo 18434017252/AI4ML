@@ -57,12 +57,30 @@ class ChatLLMFactory:
         if provider not in valid_providers:
             raise ValueError(f"Invalid provider: {provider}. Must be one of {valid_providers}")
 
+        # if provider != "sagemaker":
+        #     valid_models = cls.get_valid_models(provider)
+        #     if model not in valid_models:
+        #         if model[3:] not in valid_models:  # TODO: better logic for cross region inference
+        #             raise ValueError(
+        #                 f"Invalid model: {model} for provider {provider}. All valid models are {valid_models}. If you are using Bedrock, please check if the requested model is available in the provided AWS_DEFAULT_REGION: {os.environ.get('AWS_DEFAULT_REGION')}"
+        #             )
+
         if provider != "sagemaker":
             valid_models = cls.get_valid_models(provider)
-            if model not in valid_models:
-                if model[3:] not in valid_models:  # TODO: better logic for cross region inference
+
+            # 关键兜底：OpenAI-compatible providers 在某些环境下可能无法正确枚举模型
+            if provider == "openai" and not valid_models:
+                logger.warning(
+                    "OpenAI provider returned empty model list from get_openai_models(); "
+                    "skipping model validation for model=%s. "
+                    "Ensure OPENAI_BASE_URL/OPENAI_API_KEY are set correctly.",
+                    model,
+                )
+            else:
+                if model not in valid_models and model[3:] not in valid_models:
                     raise ValueError(
-                        f"Invalid model: {model} for provider {provider}. All valid models are {valid_models}. If you are using Bedrock, please check if the requested model is available in the provided AWS_DEFAULT_REGION: {os.environ.get('AWS_DEFAULT_REGION')}"
+                        f"Invalid model: {model} for provider {provider}. All valid models are {valid_models}. "
+                        f"If you are using Bedrock, please check if the requested model is available in the provided AWS_DEFAULT_REGION: {os.environ.get('AWS_DEFAULT_REGION')}"
                     )
 
         if provider == "openai":

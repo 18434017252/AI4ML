@@ -26,7 +26,11 @@ def get_openai_models() -> List[str]:
     try:
         client = OpenAI()
         models = client.models.list()
-        return [model.id for model in models if model.id.startswith(("gpt-3.5", "gpt-4", "o1", "o3"))]
+        ids = [m.id for m in models.data]  # 新版 SDK 通常是 models.data
+        # 不做 gpt 前缀过滤：兼容 OpenAI-compatible（华为云/本地等）
+        return ids
+
+        # return [model.id for model in models if model.id.startswith(("gpt-3.5", "gpt-4", "o1", "o3"))]
     except Exception as e:
         logger.error(f"Error fetching OpenAI models: {e}")
         return []
