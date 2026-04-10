@@ -15,7 +15,7 @@ AI4ML is a course project for a low-code / no-code machine learning community pl
 
 - Direct executor validation succeeded with `validation_score = 0.9` at `storage/mlzero_runs/irismlz_fastpath6/20260401T021635Z`.
 - API integration validation succeeded with task `f2032269` and `validation_score = 0.9` at `storage/mlzero_runs/f2032269/20260401T021837Z`.
-- `GET /api/health` currently reports `execution_runtime = mlzero + local openai-compatible llama-cpp`.
+- `GET /api/health` currently reports `execution_runtime = mlzero + Huawei MaaS openai-compatible`.
 
 ## Repository layout
 
@@ -29,30 +29,51 @@ AI4ML/
 ├── local/                    # Local GGUF model files and other machine-local assets
 ├── scripts/                  # Reproducible helper scripts
 ├── storage/                  # Local task uploads, MLZero outputs, and runtime logs
+├── .env.example              # Template for secrets – copy to .env and fill in
 ├── weekly_report_template.md
-└── 1.“智算”AI4ML 社区.docx
+└── 1."智算"AI4ML 社区.docx
 ```
 
 ## Quick start
 
-### Backend
+### 1. One-time: create your `.env` file (Windows + Huawei MaaS)
 
-```bash
-python3 -m venv .venv
-. .venv/bin/activate
-pip install -r backend/requirements.txt
-AI4ML_MLZERO_MAX_ITERATIONS=1 uvicorn backend.app.main:app --reload --port 8000
+```powershell
+# At repository root (D:\Project\gitProject\AI4ML)
+Copy-Item .env.example .env
 ```
 
-The first MLZero task run will automatically start a local `llama-cpp-python` OpenAI-compatible provider on `http://127.0.0.1:8001/v1` with model alias `gpt-4-local`. The default model file is `local/models/Qwen2.5-Coder-0.5B-Instruct-Q4_K_M.gguf`.
+Open `.env` and replace the placeholder with your real Huawei MaaS API key:
+
+```
+AI4ML_MLZERO_OPENAI_API_KEY=your-actual-maas-key
+```
+
+The backend loads `.env` automatically on startup – no per-run environment variables needed.
+
+### 2. Create and activate the `mlzero` conda environment
+
+```powershell
+conda create -n mlzero python=3.11 -y
+conda activate mlzero
+pip install -e external/autogluon-assistant
+```
+
+### 3. Backend
+
+```powershell
+conda activate mlzero
+pip install -r backend/requirements.txt
+uvicorn backend.app.main:app --reload --port 8000
+```
 
 Quick health check:
 
-```bash
-curl -s http://127.0.0.1:8000/api/health
+```powershell
+curl http://127.0.0.1:8000/api/health
 ```
 
-### Frontend
+### 4. Frontend
 
 ```bash
 cd frontend
@@ -61,6 +82,22 @@ npm run dev
 ```
 
 Open `http://localhost:5173` after the backend is running on `http://localhost:8000`.
+
+---
+
+## Switching back to local llama-cpp (Mac / dev setup)
+
+If you want to use a local `llama-cpp-python` server instead of Huawei MaaS, add the following overrides to your `.env` (or set them as environment variables before starting the backend):
+
+```dotenv
+AI4ML_MLZERO_USE_LOCAL_PROVIDER=true
+AI4ML_MLZERO_CONFIG_PATH=backend/config/mlzero-local-openai.yaml
+AI4ML_MLZERO_RUNNER_EXECUTABLE=mamba
+```
+
+The local model file must be present at `local/models/Qwen2.5-Coder-0.5B-Instruct-Q4_K_M.gguf`.
+
+---
 
 ## Week 2 documents
 
@@ -81,4 +118,4 @@ The selected project base is `MLZero / AutoGluon Assistant`. This base is also t
 
 `AutoGluon Tabular 1.1.0` is no longer the active runtime path. It only remains as historical context from earlier Week 2 exploration.
 
-The current local validation path uses a tiny on-device GGUF model plus deterministic compatibility fallbacks in the editable `external/autogluon-assistant` checkout. That proves end-to-end MLZero wiring on this machine, but it is not the final quality target.
+The default configuration targets Windows students using Huawei MaaS (`deepseek-v3.2`) with a `conda` runner and the `mlzero-huawei-openai.yaml` config. Local llama-cpp remains available via the overrides described above.

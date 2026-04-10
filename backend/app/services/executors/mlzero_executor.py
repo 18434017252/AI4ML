@@ -25,14 +25,15 @@ class MLZeroExecutor(BaseExecutor):
         self.settings = settings
         self.output_root = settings.run_output_dir
         self.output_root.mkdir(parents=True, exist_ok=True)
-        self.provider = LocalOpenAIProvider(settings)
+        self.provider = LocalOpenAIProvider(settings) if settings.mlzero_use_local_provider else None
 
     def run(self, task: TaskRecord, dataset_path: Path, time_limit: int) -> RunSummary:
         if not self.settings.mlzero_config_path.exists():
             raise FileNotFoundError(
                 f"MLZero config file not found: {self.settings.mlzero_config_path}"
             )
-        self.provider.ensure_running()
+        if self.provider is not None:
+            self.provider.ensure_running()
 
         run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         output_dir = self.output_root / task.id / run_id
@@ -42,13 +43,15 @@ class MLZeroExecutor(BaseExecutor):
 
         env = os.environ.copy()
         env["OPENAI_API_KEY"] = self.settings.mlzero_openai_api_key
-        env["OPENAI_BASE_URL"] = self.settings.mlzero_provider_base_url
+        env["OPENAI_BASE_URL"] = self.settings.mlzero_openai_base_url
         env["HF_ENDPOINT"] = self.settings.mlzero_hf_endpoint
         env["HF_HUB_OFFLINE"] = "1"
         env["TRANSFORMERS_OFFLINE"] = "1"
+        env["PYTHONUTF8"] = "1"
+        env["PYTHONIOENCODING"] = "utf-8"
 
         command = [
-            str(self.settings.mlzero_mamba_executable),
+            self.settings.mlzero_runner_executable,
             "run",
             "-n",
             self.settings.mlzero_env_name,
