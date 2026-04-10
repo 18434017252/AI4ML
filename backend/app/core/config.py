@@ -38,6 +38,8 @@ class Settings(BaseSettings):
 
     # Cloud / Windows runner settings
     mlzero_use_local_provider: bool = True
+    # URL passed to the mlzero subprocess via OPENAI_BASE_URL.
+    # Defaults to the local provider address; override for cloud APIs (e.g. Huawei MaaS).
     mlzero_openai_base_url: str = "http://127.0.0.1:8001/v1"
     mlzero_offline_mode: bool = True
     mlzero_runner_executable: str = Field(
@@ -46,6 +48,7 @@ class Settings(BaseSettings):
 
     @property
     def mlzero_provider_base_url(self) -> str:
+        """Base URL of the local llama-cpp server, used only for health-check polling."""
         return f"http://{self.mlzero_server_host}:{self.mlzero_server_port}/v1"
 
 
