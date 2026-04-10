@@ -3,5 +3,11 @@ Task description: Predict the iris label from four numeric features.
 Problem type: classification
 Label column: label
 Metric: accuracy
-Use iris.csv as the dataset.
+Use train.csv as the dataset.
 Prefer lightweight libraries: scikit-learn.
+
+Hard constraints:
+- Do not use autogluon, autogluon.tabular, AutoGluon, TabularPredictor.
+- Use only scikit-learn (sklearn), pandas, numpy.
+- Do not write or execute bash scripts. Use pure Python.
+- Assume the dataset file name is train.csv in the input folder.
