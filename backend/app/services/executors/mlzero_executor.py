@@ -75,12 +75,14 @@ class MLZeroExecutor(BaseExecutor):
         timeout_seconds = max(300, time_limit * 60)
 
         try:
-            result = subprocess.run(  # noqa: S603
+            result = subprocess.run(
                 command,
                 cwd=str(self.settings.repo_root),
                 env=env,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",  # 关键：强制按 utf-8 解码
+                errors="replace",  # 建议：遇到奇怪字符不要崩，替换掉
                 timeout=timeout_seconds,
                 check=False,
             )

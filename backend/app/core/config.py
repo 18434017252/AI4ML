@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     mlzero_use_local_provider: bool = False
     mlzero_runner_executable: str = _DEFAULT_RUNNER_EXECUTABLE
     mlzero_env_name: str = "mlzero"
-    mlzero_max_iterations: int = 2
+    mlzero_max_iterations: int = 5
     mlzero_hf_endpoint: str = "https://hf-mirror.com"
 
     # --- Local llama-cpp provider settings (Mac/dev only, not used when mlzero_use_local_provider=False) ---
