@@ -35,7 +35,7 @@ AI4ML/
 
 ## Quick start
 
-### Backend
+### Backend (macOS / Linux — local llama-cpp mode)
 
 ```bash
 python3 -m venv .venv
@@ -51,6 +51,68 @@ Quick health check:
 ```bash
 curl -s http://127.0.0.1:8000/api/health
 ```
+
+### Windows + Huawei MaaS (conda, no local model required)
+
+This mode runs MLZero inside a `conda` environment using the Huawei Cloud ModelArts MaaS OpenAI-compatible API instead of a local llama-cpp server.
+
+#### 1. Create the mlzero conda environment
+
+```powershell
+conda create -n mlzero python=3.10 -y
+conda activate mlzero
+```
+
+Then install `autogluon.assistant` from the bundled editable source (recommended for this project):
+
+```powershell
+pip install -e external\autogluon-assistant
+```
+
+Or install from PyPI:
+
+```powershell
+pip install autogluon.assistant
+```
+
+#### 2. Set environment variables (one-time, per PowerShell session or via `.env`)
+
+```powershell
+$env:AI4ML_MLZERO_USE_LOCAL_PROVIDER   = "false"
+$env:AI4ML_MLZERO_OFFLINE_MODE         = "false"
+$env:AI4ML_MLZERO_OPENAI_API_KEY       = "<your-huawei-maas-api-key>"
+$env:AI4ML_MLZERO_OPENAI_BASE_URL      = "https://api.modelarts-maas.com/openai/v1"
+$env:AI4ML_MLZERO_CONFIG_PATH          = "backend\config\mlzero-huawei-openai.yaml"
+$env:AI4ML_MLZERO_RUNNER_EXECUTABLE    = "conda"   # default on Windows; explicit for clarity
+```
+
+To make these permanent, add them to your system environment variables or create a `.env` file in the repo root with the same `KEY=value` pairs (one per line, without `$env:` prefix).
+
+#### 3. Start the backend
+
+```powershell
+pip install -r backend\requirements.txt
+uvicorn backend.app.main:app --reload --port 8000
+```
+
+#### 4. Use the frontend or API
+
+Open `http://localhost:5173` (after `npm run dev` in `frontend/`) or trigger a run directly:
+
+```powershell
+curl -s http://127.0.0.1:8000/api/health
+```
+
+#### Configuration reference
+
+| Setting (`AI4ML_` prefix) | Default | Description |
+|---|---|---|
+| `MLZERO_USE_LOCAL_PROVIDER` | `true` | Start local llama-cpp server. Set `false` for cloud APIs. |
+| `MLZERO_OPENAI_BASE_URL` | `http://127.0.0.1:8001/v1` | OpenAI-compatible base URL. Override for cloud. |
+| `MLZERO_OPENAI_API_KEY` | `local` | API key sent to the provider. |
+| `MLZERO_OFFLINE_MODE` | `true` | Sets `HF_HUB_OFFLINE=1`. Set `false` when using a cloud LLM. |
+| `MLZERO_RUNNER_EXECUTABLE` | `conda` (Windows) / `mamba` (others) | Executable used to run `<runner> run -n mlzero mlzero ...`. |
+| `MLZERO_CONFIG_PATH` | `backend/config/mlzero-local-openai.yaml` | MLZero YAML config. Use `mlzero-huawei-openai.yaml` for Huawei MaaS. |
 
 ### Frontend
 

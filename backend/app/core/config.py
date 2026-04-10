@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import sys
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,6 +35,14 @@ class Settings(BaseSettings):
     mlzero_hf_endpoint: str = "https://hf-mirror.com"
     selected_project_base: str = "mlzero / autogluon-assistant"
     execution_runtime: str = "mlzero + local openai-compatible llama-cpp"
+
+    # Cloud / Windows runner settings
+    mlzero_use_local_provider: bool = True
+    mlzero_openai_base_url: str = "http://127.0.0.1:8001/v1"
+    mlzero_offline_mode: bool = True
+    mlzero_runner_executable: str = Field(
+        default_factory=lambda: "conda" if sys.platform == "win32" else "mamba"
+    )
 
     @property
     def mlzero_provider_base_url(self) -> str:
