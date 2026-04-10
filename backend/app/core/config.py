@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     # --- Cloud / Huawei MaaS defaults (used by default on Windows student setup) ---
     mlzero_config_path: Path = REPO_ROOT / "backend" / "config" / "mlzero-huawei-openai.yaml"
     mlzero_openai_base_url: str = "https://api.modelarts-maas.com/openai/v1"
+    # Must be set via AI4ML_MLZERO_OPENAI_API_KEY in .env for cloud use; "local" is only valid with local provider.
     mlzero_openai_api_key: str = "local"
     mlzero_use_local_provider: bool = False
     mlzero_runner_executable: str = _DEFAULT_RUNNER_EXECUTABLE
@@ -40,6 +41,7 @@ class Settings(BaseSettings):
 
     # --- Local llama-cpp provider settings (Mac/dev only, not used when mlzero_use_local_provider=False) ---
     mlzero_model_path: Path = REPO_ROOT / "local" / "models" / "Qwen2.5-Coder-0.5B-Instruct-Q4_K_M.gguf"
+    # mlzero_mamba_executable is used by LocalOpenAIProvider._start_server() when mlzero_use_local_provider=True.
     mlzero_mamba_executable: Path = Path.home() / ".local" / "miniforge3" / "bin" / "mamba"
     mlzero_server_host: str = "127.0.0.1"
     mlzero_server_port: int = 8001
